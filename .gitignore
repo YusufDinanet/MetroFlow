@@ -1,0 +1,10 @@
+.DS_Store
+.venv/
+.gtfs-cache/
+__pycache__/
+*.pyc
+*.sqlite3
+*.zip
+
+# Local data/output
+metro_display/data/
