@@ -1,40 +1,46 @@
-# Metro Display (Live + GTFS fallback)
+# Metro Display
 
-Live timetable display for Raspberry Pi / E-Ink.
+Live-first metro board renderer used by this project.
 
-## Run (terminal)
+## Run
+Terminal mode:
 ```bash
 python3 -m metro_display.terminal
 ```
 
-## Run (image render)
+Image mode:
 ```bash
 python3 -m metro_display.app
 ```
 
-Latest PNG:
-```
+Output image path:
+```text
 metro_display/data/last.png
 ```
 
-## Configuration
+## What it shows
+- Marmaray departure minutes (Avrupa / Anadolu)
+- M4 departure minutes (Kadikoy / Sabiha)
+- Optional Ramadan footer:
+  - imsak
+  - iftar
+  - remaining time
+
+## Config keys
 Edit `metro_display/config.py`:
-- `USE_LIVE_SOURCES` / `LIVE_FALLBACK_TO_GTFS`
+- `STATION_NAME`
+- `USE_LIVE_SOURCES`
+- `LIVE_FALLBACK_TO_GTFS`
+- `SHOW_STATUS_NOTE`
 - `M4_TIMETABLE_PAGE_URL` / `M4_TIMETABLE_AJAX_URL`
 - `MARMARAY_TIMETABLE_PAGE_URL` / `MARMARAY_API_URL`
-- `SHOW_RAMADAN_PANEL` / `RAMADAN_TARGET_DATE`
+- `SHOW_RAMADAN_PANEL`
+- `RAMADAN_TARGET_DATE`
 - `RAMADAN_CITY` / `RAMADAN_COUNTRY` / `RAMADAN_METHOD`
-- GTFS source settings (optional fallback)
-- `STATION_NAME`
-- `LINES` (direction keywords + fixed stop_ids)
-- `DISPLAY_DRIVER` (`png` or `waveshare`)
-
-## Requirements
-- Python 3.6+
-- Pillow (`pip install pillow`)
-- waveshare_epd (only on hardware)
+- `DISPLAY_DRIVER` (`png` / `waveshare`)
+- `SCREEN_WIDTH` / `SCREEN_HEIGHT`
 
 ## Notes
-- M4 uses Metro Istanbul timetable endpoint
-- Marmaray uses TCDD timetable endpoint
-- GTFS is used only as fallback when enabled
+- Live sources are timetable APIs, not GPS delay feeds.
+- GTFS is fallback only when enabled.
+- If image render has Turkish glyph issues, set `FONT_PATH` to a TTF that supports Turkish.

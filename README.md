@@ -1,23 +1,20 @@
 # AyrilikPano
 
-Minimal, station-board style metro display for Ayrilikcesmesi (Marmaray + M4).
-Live-first, Raspberry Pi friendly.
+Live-first station-style display for Ayrilik Cesmesi:
+- Marmaray + M4 departure minutes
+- Optional GTFS fallback
+- Optional Ramadan footer (imsak / iftar + remaining time)
 
-**Suggested repo name:** `ayrilik-pano`
+Designed for Raspberry Pi and 7-inch screens (800x480).
 
-## What this is
-- Small home display that feels like a station panel
-- Uses **official live web sources** for M4 and Marmaray
-- Calculates "minutes left" from returned departure times
-- Works in terminal now; ready for E-Ink later
+## Current status
+- M4 source: Metro Istanbul live timetable endpoint
+- Marmaray source: TCDD live timetable endpoint
+- GTFS is used only as fallback when configured
+- Board note can hide old/expired GTFS text (`SHOW_STATUS_NOTE=False`)
+- Ramadan footer is rendered at the bottom of the same screen
 
-## How it works (high level)
-1) M4: query Metro Istanbul timetable endpoint
-2) Marmaray: query TCDD timetable endpoint
-3) Parse station-specific departures for Ayrilikcesmesi
-4) Render to terminal (or PNG for E-Ink)
-
-## Quick start (terminal mode)
+## Quick start
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -25,70 +22,91 @@ pip install -r metro_display/requirements.txt
 python3 -m metro_display.terminal
 ```
 
-## Configuration
-Edit `metro_display/config.py`:
-- `STATION_NAME`: default `Ayrilik Cesmesi`
-- `LINES`: line definitions and **fixed stop_ids** for accuracy
-  - Marmaray stop_id: `12258`
-  - M4 stop_id: `94911`
-- `DEPARTURES_PER_DIRECTION`: how many upcoming trips
-- `LOOKAHEAD_MINUTES`: max minutes to show (set 0 to disable)
-- `DISPLAY_DRIVER`: `png` or `waveshare`
-- `REFRESH_SECONDS`: refresh interval
-- `TERMINAL_WIDTH`: terminal panel width (`0` = auto detect)
-- `TERMINAL_LABEL_WIDTH`: direction label column width
-- `USE_LIVE_SOURCES`: live providers on/off
-- `LIVE_FALLBACK_TO_GTFS`: fallback to GTFS if live calls fail
-- `M4_TIMETABLE_PAGE_URL` + `M4_TIMETABLE_AJAX_URL`
-- `MARMARAY_TIMETABLE_PAGE_URL` + `MARMARAY_API_URL`
-- `SHOW_RAMADAN_PANEL`: show/hide imsak-iftar footer
-- `RAMADAN_TARGET_DATE`: fixed date (`YYYY-MM-DD`) or empty for today
-- `RAMADAN_CITY` / `RAMADAN_COUNTRY` / `RAMADAN_METHOD`
+Image render mode:
+```bash
+python3 -m metro_display.app
+```
 
-## Data refresh
-Live calls are fetched each refresh cycle (`REFRESH_SECONDS`).
-If GTFS fallback is enabled, GTFS cache is still used.
-- To force GTFS refresh:
+Latest image output:
+```text
+metro_display/data/last.png
+```
+
+## Data sources
+- M4:
+  - `https://www.metro.istanbul/SeferDurumlari/SeferDetaylari`
+  - `https://www.metro.istanbul/SeferDurumlari/AJAXSeferGetir`
+- Marmaray:
+  - `https://www.tcddtasimacilik.gov.tr/marmaray/tr/gunluk_tren_saatleri`
+  - `https://api.tcddtasimacilik.gov.tr/api/SubPages/GetTransportationTrainsGroupwithHours?marmaray=true`
+- Ramadan timings:
+  - `https://api.aladhan.com/v1/timingsByCity`
+
+## Configuration
+Edit `metro_display/config.py`.
+
+Core:
+- `STATION_NAME`
+- `REFRESH_SECONDS`
+- `DEPARTURES_PER_DIRECTION`
+- `LOOKAHEAD_MINUTES`
+- `TIMEZONE`
+
+Live/fallback:
+- `USE_LIVE_SOURCES`
+- `LIVE_FALLBACK_TO_GTFS`
+- `SHOW_STATUS_NOTE`
+- `ALLOW_CALENDAR_FALLBACK`
+- `CALENDAR_FALLBACK_DAYS`
+
+Line and stop mapping:
+- `LINES`
+  - Marmaray fixed stop_id: `12258`
+  - M4 fixed stop_id: `94911`
+
+Display:
+- `DISPLAY_DRIVER` (`png` or `waveshare`)
+- `SCREEN_WIDTH` / `SCREEN_HEIGHT` (default `800x480`)
+- `TERMINAL_WIDTH` / `TERMINAL_LABEL_WIDTH`
+- `FONT_PATH` (recommended for Turkish characters on image render)
+
+Ramadan footer:
+- `SHOW_RAMADAN_PANEL`
+- `RAMADAN_CITY`
+- `RAMADAN_COUNTRY`
+- `RAMADAN_METHOD`
+- `RAMADAN_TARGET_DATE`
+  - `YYYY-MM-DD` -> fixed day (example: `2026-02-20`)
+  - empty string -> auto use today
+
+## 7-inch usage
+For 7-inch HDMI terminal:
+- keep `SCREEN_WIDTH = 800`, `SCREEN_HEIGHT = 480`
+- run terminal full screen
+- tune `TERMINAL_WIDTH` (for example `92`)
+
+For 7-inch e-ink:
+- set `DISPLAY_DRIVER = "waveshare"`
+- run `python3 -m metro_display.app`
+
+## Notes on reliability
+- Live sources are timetable-based, not vehicle GPS delay data.
+- If a live source fails and GTFS fallback is enabled, departures still render from local GTFS.
+- If fallback data is old but you do not want warning text, keep `SHOW_STATUS_NOTE=False`.
+- Ramadan footer has API fallback behavior and can show `veri alinamadi` on fetch errors.
+
+## Maintenance
+Force GTFS refresh:
 ```bash
 rm -f metro_display/data/gtfs.zip
 python3 -m metro_display.terminal
 ```
 
-## Reliability notes (important)
-- M4 source: Metro Istanbul `SeferDurumlari/AJAXSeferGetir`
-- Marmaray source: TCDD `GetTransportationTrainsGroupwithHours`
-- Live sources are still timetable-based (no delay/vehicle GPS feed).
-- If live source fails and `LIVE_FALLBACK_TO_GTFS=True`, app falls back to local GTFS.
-- If `SHOW_STATUS_NOTE=False`, fallback/expiry text is hidden on board.
-
-## Troubleshooting
-- Network/API errors can be temporary.
-  Keep fallback enabled for resilience.
-- If you see "Yarin", it means no more trips remain today.
-  This is expected around service end.
-- If Turkish characters look broken, set terminal encoding:
-```bash
-PYTHONIOENCODING=utf-8 python3 -m metro_display.terminal
-```
-
-## Hardware (later)
-Target device: Raspberry Pi Zero 2 W + 7-7.5" E-Ink
-- Set `DISPLAY_DRIVER = "waveshare"`
-- Run `python3 -m metro_display.app`
-- Latest render saved to `metro_display/data/last.png` in dev mode
-
-For a 7" HDMI terminal screen:
-- Keep `SCREEN_WIDTH = 800` and `SCREEN_HEIGHT = 480`
-- Run terminal fullscreen and tune `TERMINAL_WIDTH` (example: `92`)
-
-## Repo structure
-- `metro_display/` main Python app
-- `metro_display/gtfs/` downloader + importer
-- `metro_display/schedule/` next-trip logic
-- `metro_display/render/` layout + drawing
-- `metro_display/systemd/` service file for auto-start
-
-## Suggested next steps
-- Add line health indicators (live source ok/fallback mode)
-- Add "last updated" badge in terminal
-- Optional: real-time overlay if a GTFS-RT feed becomes available
+## Project layout
+- `metro_display/app.py`: main loop and model builder
+- `metro_display/live_sources.py`: M4 + Marmaray live providers
+- `metro_display/ramadan.py`: imsak/iftar footer module
+- `metro_display/render/`: image rendering
+- `metro_display/terminal.py`: terminal board output
+- `metro_display/gtfs/`: GTFS download/import
+- `metro_display/systemd/`: service example
