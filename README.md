@@ -1,22 +1,21 @@
 # AyrilikPano
 
 Minimal, station-board style metro display for Ayrilikcesmesi (Marmaray + M4).
-GTFS-based, offline-first, and Raspberry Pi friendly.
+Live-first, Raspberry Pi friendly.
 
 **Suggested repo name:** `ayrilik-pano`
 
 ## What this is
 - Small home display that feels like a station panel
-- Uses **static GTFS** (no scraping, no real-time dependency)
-- Calculates "minutes left" from schedules
+- Uses **official live web sources** for M4 and Marmaray
+- Calculates "minutes left" from returned departure times
 - Works in terminal now; ready for E-Ink later
 
 ## How it works (high level)
-1) Download GTFS from IBB CKAN
-2) Import to SQLite
-3) Resolve stop_id for Ayrilikcesmesi
-4) Use stop_times + frequencies to compute next departures
-5) Render to terminal (or PNG for E-Ink)
+1) M4: query Metro Istanbul timetable endpoint
+2) Marmaray: query TCDD timetable endpoint
+3) Parse station-specific departures for Ayrilikcesmesi
+4) Render to terminal (or PNG for E-Ink)
 
 ## Quick start (terminal mode)
 ```bash
@@ -34,29 +33,39 @@ Edit `metro_display/config.py`:
   - M4 stop_id: `94911`
 - `DEPARTURES_PER_DIRECTION`: how many upcoming trips
 - `LOOKAHEAD_MINUTES`: max minutes to show (set 0 to disable)
-- `GTFS_ZIP_URL` or `CKAN_BASE_URL` + `CKAN_DATASET_ID`
 - `DISPLAY_DRIVER`: `png` or `waveshare`
 - `REFRESH_SECONDS`: refresh interval
+- `TERMINAL_WIDTH`: terminal panel width (`0` = auto detect)
+- `TERMINAL_LABEL_WIDTH`: direction label column width
+- `USE_LIVE_SOURCES`: live providers on/off
+- `LIVE_FALLBACK_TO_GTFS`: fallback to GTFS if live calls fail
+- `M4_TIMETABLE_PAGE_URL` + `M4_TIMETABLE_AJAX_URL`
+- `MARMARAY_TIMETABLE_PAGE_URL` + `MARMARAY_API_URL`
+- `SHOW_RAMADAN_PANEL`: show/hide imsak-iftar footer
+- `RAMADAN_TARGET_DATE`: fixed date (`YYYY-MM-DD`) or empty for today
+- `RAMADAN_CITY` / `RAMADAN_COUNTRY` / `RAMADAN_METHOD`
 
 ## Data refresh
-GTFS is cached. Default refresh period is 24h.
-- To force refresh, delete the cached zip:
+Live calls are fetched each refresh cycle (`REFRESH_SECONDS`).
+If GTFS fallback is enabled, GTFS cache is still used.
+- To force GTFS refresh:
 ```bash
 rm -f metro_display/data/gtfs.zip
 python3 -m metro_display.terminal
 ```
 
 ## Reliability notes (important)
-- This is **schedule-based**. No live delays/vehicle locations.
-- The public GTFS calendar in IBB currently ends at **2024-12-31**.
-  The app falls back to the closest available weekday when running in 2026.
-- Marmaray schedules in this dataset are defined by **frequencies**; these are now supported.
+- M4 source: Metro Istanbul `SeferDurumlari/AJAXSeferGetir`
+- Marmaray source: TCDD `GetTransportationTrainsGroupwithHours`
+- Live sources are still timetable-based (no delay/vehicle GPS feed).
+- If live source fails and `LIVE_FALLBACK_TO_GTFS=True`, app falls back to local GTFS.
+- If `SHOW_STATUS_NOTE=False`, fallback/expiry text is hidden on board.
 
 ## Troubleshooting
-- "Remote end closed connection without response": temporary server/network issue.
-  The app retries and uses cached GTFS if available.
+- Network/API errors can be temporary.
+  Keep fallback enabled for resilience.
 - If you see "Yarin", it means no more trips remain today.
-  Increase `LOOKAHEAD_MINUTES` or check if GTFS is outdated.
+  This is expected around service end.
 - If Turkish characters look broken, set terminal encoding:
 ```bash
 PYTHONIOENCODING=utf-8 python3 -m metro_display.terminal
@@ -68,6 +77,10 @@ Target device: Raspberry Pi Zero 2 W + 7-7.5" E-Ink
 - Run `python3 -m metro_display.app`
 - Latest render saved to `metro_display/data/last.png` in dev mode
 
+For a 7" HDMI terminal screen:
+- Keep `SCREEN_WIDTH = 800` and `SCREEN_HEIGHT = 480`
+- Run terminal fullscreen and tune `TERMINAL_WIDTH` (example: `92`)
+
 ## Repo structure
 - `metro_display/` main Python app
 - `metro_display/gtfs/` downloader + importer
@@ -76,6 +89,6 @@ Target device: Raspberry Pi Zero 2 W + 7-7.5" E-Ink
 - `metro_display/systemd/` service file for auto-start
 
 ## Suggested next steps
-- Add weekly-pattern fallback for expired calendars (more realistic in 2026)
+- Add line health indicators (live source ok/fallback mode)
 - Add "last updated" badge in terminal
 - Optional: real-time overlay if a GTFS-RT feed becomes available

@@ -28,10 +28,59 @@ TIMEZONE = "Europe/Istanbul"
 REFRESH_SECONDS = 60
 DEPARTURES_PER_DIRECTION = 2
 LOOKAHEAD_MINUTES = 120
+TERMINAL_WIDTH = 0  # 0 = auto-detect terminal width
+TERMINAL_LABEL_WIDTH = 10
+
+# --- Live sources (M4 + Marmaray) ---
+USE_LIVE_SOURCES = True
+LIVE_FALLBACK_TO_GTFS = True  # If live fails, fallback to local GTFS.
+LIVE_TIMEOUT_SECONDS = 20
+LIVE_META_CACHE_SECONDS = 6 * 3600
+LIVE_DAY_WRAP_THRESHOLD_MINUTES = 180
+
+# Metro Istanbul (M4)
+M4_TIMETABLE_PAGE_URL = "https://www.metro.istanbul/SeferDurumlari/SeferDetaylari"
+M4_TIMETABLE_AJAX_URL = "https://www.metro.istanbul/SeferDurumlari/AJAXSeferGetir"
+
+# TCDD Marmaray
+MARMARAY_TIMETABLE_PAGE_URL = "https://www.tcddtasimacilik.gov.tr/marmaray/tr/gunluk_tren_saatleri"
+MARMARAY_API_URL = "https://api.tcddtasimacilik.gov.tr/api/SubPages/GetTransportationTrainsGroupwithHours?marmaray=true"
+MARMARAY_API_BASIC_TOKEN = "aXNfYmFzaWNfdXNlcjppczJvMjMh"
+MARMARAY_TRAIN_CODE_PREFIX = "000001"
+MARMARAY_EUROPE_KEYWORDS = [
+    "Halkalı",
+    "Ataköy",
+    "Zeytinburnu",
+    "Kazlıçeşme",
+    "Marmaray Yenikapı",
+    "Marmaray Sirkeci",
+    "İstanbul",
+]
+MARMARAY_ANATOLIA_KEYWORDS = [
+    "Gebze",
+    "Pendik",
+    "Söğütlüçeşme",
+    "Tuzla",
+    "Kartal",
+    "Maltepe",
+    "Küçükyalı",
+    "Ayrılıkçeşmesi",
+    "Marmaray Üsküdar",
+]
+
+# --- Ramadan footer (imsak / iftar) ---
+SHOW_RAMADAN_PANEL = True
+RAMADAN_CITY = "Istanbul"
+RAMADAN_COUNTRY = "Turkey"
+RAMADAN_METHOD = 13  # Diyanet (experimental) in Aladhan API
+RAMADAN_TARGET_DATE = "2026-02-20"  # YYYY-MM-DD; empty => today
+RAMADAN_API_BASE_URL = "https://api.aladhan.com/v1/timingsByCity"
+RAMADAN_TIMEOUT_SECONDS = 15
 
 # If True, allow fallback to the nearest calendar date when today has no service.
 ALLOW_CALENDAR_FALLBACK = True
-CALENDAR_FALLBACK_DAYS = 14
+CALENDAR_FALLBACK_DAYS = 500  # Keep minutes visible even when source calendar is old.
+SHOW_STATUS_NOTE = False  # Hide fallback/expired notes on board.
 
 # --- Station ---
 STATION_NAME = "Ayrılık Çeşmesi"

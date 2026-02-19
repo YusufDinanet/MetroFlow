@@ -1,5 +1,5 @@
 """Render the info screen to a Pillow image."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
 
@@ -27,6 +27,7 @@ class ScreenModel:
     updated_at: datetime
     lines: List[LineBlock]
     note: Optional[str] = None
+    footer_lines: List[str] = field(default_factory=list)
 
 
 def _load_font(size: int) -> ImageFont.ImageFont:
@@ -36,6 +37,14 @@ def _load_font(size: int) -> ImageFont.ImageFont:
         except OSError:
             pass
     return ImageFont.load_default()
+
+
+def _safe_draw_text(draw: ImageDraw.ImageDraw, xy, text: str, font: ImageFont.ImageFont, fill: int) -> None:
+    try:
+        draw.text(xy, text, font=font, fill=fill)
+    except UnicodeEncodeError:
+        ascii_text = text.encode("ascii", "replace").decode("ascii")
+        draw.text(xy, ascii_text, font=font, fill=fill)
 
 
 def render_screen(model: ScreenModel) -> Image.Image:
@@ -50,19 +59,20 @@ def render_screen(model: ScreenModel) -> Image.Image:
     x = LAYOUT.margin_x
     y = LAYOUT.margin_y
 
-    draw.text((x, y), model.title, font=font_title, fill=config.FOREGROUND_COLOR)
+    _safe_draw_text(draw, (x, y), model.title, font=font_title, fill=config.FOREGROUND_COLOR)
     y += config.FONT_TITLE_SIZE + LAYOUT.section_gap
 
     for line in model.lines:
-        draw.text((x, y), line.name, font=font_section, fill=config.FOREGROUND_COLOR)
+        _safe_draw_text(draw, (x, y), line.name, font=font_section, fill=config.FOREGROUND_COLOR)
         y += config.FONT_SECTION_SIZE + LAYOUT.row_gap
 
         for direction in line.directions:
             label = f"-> {direction.label}"
-            draw.text((x, y), label, font=font_row, fill=config.FOREGROUND_COLOR)
+            _safe_draw_text(draw, (x, y), label, font=font_row, fill=config.FOREGROUND_COLOR)
 
             departures = " | ".join(direction.departures) if direction.departures else "--"
-            draw.text(
+            _safe_draw_text(
+                draw,
                 (x + LAYOUT.label_col_width, y),
                 departures,
                 font=font_row,
@@ -72,7 +82,13 @@ def render_screen(model: ScreenModel) -> Image.Image:
 
         y += LAYOUT.section_gap
 
+    footer_lines = list(model.footer_lines)
     if model.note:
-        draw.text((x, config.SCREEN_HEIGHT - config.FONT_TIME_SIZE - 8), model.note, font=font_time, fill=config.FOREGROUND_COLOR)
+        footer_lines.insert(0, model.note)
+    if footer_lines:
+        line_height = config.FONT_TIME_SIZE + 4
+        start_y = config.SCREEN_HEIGHT - 8 - (line_height * len(footer_lines))
+        for idx, line in enumerate(footer_lines):
+            _safe_draw_text(draw, (x, start_y + idx * line_height), line, font=font_time, fill=config.FOREGROUND_COLOR)
 
     return img

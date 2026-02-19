@@ -89,6 +89,10 @@ def _find_nearest_in_range(now: datetime, min_key: str, max_key: str) -> Optiona
     return None
 
 
+def _day_distance(a: datetime, b: datetime) -> int:
+    return abs((a.date() - b.date()).days)
+
+
 def _find_fallback_date(conn, now: datetime) -> Optional[Tuple[datetime, str]]:
     if not config.ALLOW_CALENDAR_FALLBACK:
         return None
@@ -97,7 +101,9 @@ def _find_fallback_date(conn, now: datetime) -> Optional[Tuple[datetime, str]]:
     if min_key and max_key:
         nearest = _find_nearest_in_range(now, min_key, max_key)
         if nearest:
-            return nearest
+            # Do not fallback to very old/future service days.
+            if _day_distance(now, nearest[0]) <= config.CALENDAR_FALLBACK_DAYS:
+                return nearest
 
     for delta in range(1, config.CALENDAR_FALLBACK_DAYS + 1):
         for sign in (-1, 1):

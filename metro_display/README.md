@@ -1,6 +1,6 @@
-# Metro Display (GTFS-based)
+# Metro Display (Live + GTFS fallback)
 
-GTFS schedule display for Raspberry Pi / E-Ink. Offline-first.
+Live timetable display for Raspberry Pi / E-Ink.
 
 ## Run (terminal)
 ```bash
@@ -19,8 +19,12 @@ metro_display/data/last.png
 
 ## Configuration
 Edit `metro_display/config.py`:
-- `GTFS_ZIP_URL` or `CKAN_BASE_URL` + `CKAN_DATASET_ID`
-- `GTFS_ENCODING` (IBB uses windows-1254)
+- `USE_LIVE_SOURCES` / `LIVE_FALLBACK_TO_GTFS`
+- `M4_TIMETABLE_PAGE_URL` / `M4_TIMETABLE_AJAX_URL`
+- `MARMARAY_TIMETABLE_PAGE_URL` / `MARMARAY_API_URL`
+- `SHOW_RAMADAN_PANEL` / `RAMADAN_TARGET_DATE`
+- `RAMADAN_CITY` / `RAMADAN_COUNTRY` / `RAMADAN_METHOD`
+- GTFS source settings (optional fallback)
 - `STATION_NAME`
 - `LINES` (direction keywords + fixed stop_ids)
 - `DISPLAY_DRIVER` (`png` or `waveshare`)
@@ -31,5 +35,6 @@ Edit `metro_display/config.py`:
 - waveshare_epd (only on hardware)
 
 ## Notes
-- Uses stop_times + frequencies
-- Schedule-based only (no live delays)
+- M4 uses Metro Istanbul timetable endpoint
+- Marmaray uses TCDD timetable endpoint
+- GTFS is used only as fallback when enabled
