@@ -17,28 +17,30 @@ except ModuleNotFoundError as exc:  # pragma: no cover
 
 from . import app, config
 from .db import get_connection
+from .ramadan import get_ramadan_footer_lines
 from .render.draw import LineBlock, ScreenModel
+from .schedule.next_trips import get_now
 
-BG_TOP = "#1d2533"
-BG_BOTTOM = "#0b1220"
-SHELL_OUTER = "#090d15"
-SHELL_INNER = "#121a28"
-PANEL_FILL = "#182235"
-PANEL_BORDER = "#43516c"
-PANEL_DIVIDER = "#2c3850"
+BG_TOP = "#2b2723"
+BG_BOTTOM = "#151311"
+SHELL_OUTER = "#100f0e"
+SHELL_INNER = "#1b1917"
+PANEL_FILL = "#24211d"
+PANEL_BORDER = "#5d5349"
+PANEL_DIVIDER = "#3d362f"
 
-TEXT_MAIN = "#f7fbff"
-TEXT_MUTED = "#aab6cb"
-TEXT_SOFT = "#7f8aa2"
-CYAN = "#3fe2ff"
-MAGENTA = "#ff5de2"
-GREEN = "#66ffac"
+TEXT_MAIN = "#f6f1ea"
+TEXT_MUTED = "#c2b5a8"
+TEXT_SOFT = "#8f8175"
+CYAN = "#67c7c0"
+MAGENTA = "#e48ca7"
+GREEN = "#8fcb8f"
 
-RAM_BG = "#122013"
-RAM_BORDER = "#2f6c46"
-RAM_TITLE = "#def9e5"
-RAM_TEXT = "#f0fff3"
-RAM_ACCENT = "#ffd35a"
+RAM_BG = "#1b2118"
+RAM_BORDER = "#5a7544"
+RAM_TITLE = "#e4efd6"
+RAM_TEXT = "#f2f6ea"
+RAM_ACCENT = "#f2c978"
 
 
 def _safe_text(value: str) -> str:
@@ -146,7 +148,7 @@ def _line_theme(line_name: str) -> Tuple[str, str]:
         return (CYAN, CYAN)
     if norm == "m4" or "m4" in norm:
         return (MAGENTA, MAGENTA)
-    return ("#7edfff", "#f5cf58")
+    return ("#8bb9d6", "#f0c978")
 
 
 def _line_title(line_name: str) -> str:
@@ -287,6 +289,12 @@ class DesktopBoard:
         if config.DESKTOP_FULLSCREEN:
             self._enter_fullscreen(kiosk=True)
         self._apply_cursor(hidden=True)
+
+    def _now(self) -> datetime:
+        try:
+            return get_now(config.TIMEZONE)
+        except Exception:  # noqa: BLE001
+            return datetime.now()
 
     def _apply_cursor(self, hidden: bool):
         cursor = "none" if hidden else ""
@@ -720,7 +728,7 @@ class DesktopBoard:
     def _refresh_error(self, err: Exception):
         self.model = ScreenModel(
             title=config.STATION_NAME.upper(),
-            updated_at=datetime.now(),
+            updated_at=self._now(),
             lines=self.model.lines,
             note=f"Hata: {err}",
             footer_lines=self.model.footer_lines,
@@ -737,9 +745,22 @@ class DesktopBoard:
             worker.start()
         self.root.after(max(5, int(config.REFRESH_SECONDS)) * 1000, self._refresh_tick)
 
+    def _ui_tick(self):
+        now = self._now()
+        self.model.updated_at = now
+        if config.SHOW_RAMADAN_PANEL:
+            try:
+                self.model.footer_lines = get_ramadan_footer_lines(now)
+            except Exception:  # noqa: BLE001
+                pass
+        self._draw()
+        tick_seconds = max(1, int(getattr(config, "DESKTOP_UI_TICK_SECONDS", 1)))
+        self.root.after(tick_seconds * 1000, self._ui_tick)
+
     def run(self):
         app._ensure_db()
         self._draw()
+        self._ui_tick()
         self._refresh_tick()
         self.root.mainloop()
 

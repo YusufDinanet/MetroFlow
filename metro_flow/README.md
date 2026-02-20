@@ -47,6 +47,14 @@ PYTHONPATH="$(pwd)" .venv/bin/python -m metro_flow.desktop
 - Desktop: `DESKTOP_SHOW_TIME_AFTER_MINUTES` (ornek: `30`)
 - Terminal: `TERMINAL_WIDTH`, `TERMINAL_USE_UNICODE`
 
+Ramazan paneli yenileme:
+- Kalan sure arayuzde her `DESKTOP_UI_TICK_SECONDS` (varsayilan `60`) ile yenilenir.
+- Metro/Marmaray API verisi her `REFRESH_SECONDS` (varsayilan `60`) dongusunde yenilenir.
+- `RAMADAN_TARGET_DATE=\"\"` ise bugunun tarihi kullanilir (onerilen).
+- Sabit tarih verilirse panel o tarihe kilitlenir.
+- Gecmise sabitlenmis tarih verilse bile sistem bugune doner.
+- Hicri ay Ramazan (9) bittikten sonra alt panel otomatik gizlenir.
+
 ## Notlar
 - Bu paket `urllib` kullandigi icin `requests` gerekmez.
 - `tkinter` pip paketi degildir; sistemden kurulmalidir.

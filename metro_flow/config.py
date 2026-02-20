@@ -75,7 +75,7 @@ SHOW_RAMADAN_PANEL = True
 RAMADAN_CITY = "Istanbul"
 RAMADAN_COUNTRY = "Turkey"
 RAMADAN_METHOD = 13  # Diyanet (experimental) in Aladhan API
-RAMADAN_TARGET_DATE = "2026-02-20"  # YYYY-MM-DD; empty => today
+RAMADAN_TARGET_DATE = ""  # YYYY-MM-DD; empty => today (recommended)
 RAMADAN_API_BASE_URL = "https://api.aladhan.com/v1/timingsByCity"
 RAMADAN_TIMEOUT_SECONDS = 15
 
@@ -130,6 +130,7 @@ DESKTOP_HEIGHT = 600
 DESKTOP_FULLSCREEN = True
 DESKTOP_FONT_FAMILY = "Helvetica"
 DESKTOP_SHOW_TIME_AFTER_MINUTES = 30  # show HH:MM instead of minutes after this threshold
+DESKTOP_UI_TICK_SECONDS = 60  # refresh clock/ramadan countdown on UI (1 minute)
 DESKTOP_BG_COLOR = "#070b10"
 DESKTOP_GRID_COLOR = "#111b24"
 DESKTOP_PANEL_COLOR = "#0d1722"

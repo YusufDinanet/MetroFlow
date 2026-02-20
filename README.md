@@ -177,6 +177,14 @@ Tüm ayarlar: `metro_flow/config.py`
 - Desktop: `DESKTOP_WIDTH`, `DESKTOP_HEIGHT`, `DESKTOP_FULLSCREEN`
 - Ramazan: `SHOW_RAMADAN_PANEL`, `RAMADAN_TARGET_DATE`
 
+Ramazan paneli yenileme notu:
+- Kalan süre arayüzde her `DESKTOP_UI_TICK_SECONDS` (varsayılan `60`) ile güncellenir.
+- Metro/Marmaray API verisi her `REFRESH_SECONDS` (varsayılan `60`) döngüsünde yenilenir.
+- `RAMADAN_TARGET_DATE=""` ise sistem bugünün tarihini kullanır (önerilen).
+- Sabit tarih (`2026-02-20` gibi) girilirse panel o güne kilitlenir.
+- Geçmişe sabitlenmiş tarih girilse bile sistem bugüne döner.
+- Hicri ay Ramazan (9) bittikten sonra alt panel otomatik gizlenir.
+
 ## Sorun Giderme
 
 `No module named metro_flow.desktop`:

@@ -34,6 +34,8 @@ class PrayerTimes:
     day: date
     imsak: str
     iftar: str
+    hijri_month: Optional[int] = None
+    hijri_day: Optional[int] = None
 
 
 def _urlopen(req, timeout: int):
@@ -67,6 +69,13 @@ def _extract_hhmm(raw: str) -> str:
     return f"{hour:02d}:{minute:02d}"
 
 
+def _safe_int(raw) -> Optional[int]:
+    try:
+        return int(str(raw).strip())
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _build_url(day: date) -> str:
     day_key = day.strftime("%d-%m-%Y")
     params = urllib.parse.urlencode(
@@ -95,6 +104,7 @@ def _fetch_day_times(day: date) -> Optional[PrayerTimes]:
 
     data = payload.get("data") or {}
     timings = data.get("timings") or {}
+    hijri = (data.get("date") or {}).get("hijri") or {}
     imsak = _extract_hhmm(timings.get("Imsak") or timings.get("Fajr") or "")
     iftar = _extract_hhmm(timings.get("Maghrib") or timings.get("Sunset") or "")
     if not imsak or not iftar:
@@ -112,7 +122,13 @@ def _fetch_day_times(day: date) -> Optional[PrayerTimes]:
         except ValueError:
             day_obj = day
 
-    result = PrayerTimes(day=day_obj, imsak=imsak, iftar=iftar)
+    result = PrayerTimes(
+        day=day_obj,
+        imsak=imsak,
+        iftar=iftar,
+        hijri_month=_safe_int((hijri.get("month") or {}).get("number")),
+        hijri_day=_safe_int(hijri.get("day")),
+    )
     _DAILY_CACHE[cache_key] = result
     return result
 
@@ -127,12 +143,13 @@ def _fallback_day_times(day: date) -> Optional[PrayerTimes]:
     pair = day_map.get(day.isoformat())
     if not pair:
         return None
-    return PrayerTimes(day=day, imsak=pair[0], iftar=pair[1])
+    return PrayerTimes(day=day, imsak=pair[0], iftar=pair[1], hijri_month=9)
 
 
 def _target_date(now: datetime) -> Tuple[date, bool]:
     forced = _parse_iso_date(config.RAMADAN_TARGET_DATE)
-    if forced:
+    # Ignore stale fixed dates (e.g. yesterday) to keep panel truly dynamic.
+    if forced and forced >= now.date():
         return forced, True
     return now.date(), False
 
@@ -171,10 +188,18 @@ def _resolve_remaining_for_dynamic_day(now: datetime, key: str, today: PrayerTim
         return current_time, remaining
 
     tomorrow = _fetch_day_times(today.day + timedelta(days=1))
-    if tomorrow is None:
+    if tomorrow is None or (tomorrow.hijri_month is not None and tomorrow.hijri_month != 9):
         return current_time, None
     tomorrow_time = tomorrow.imsak if key == "imsak" else tomorrow.iftar
     return tomorrow_time, _minutes_until(now, tomorrow.day, tomorrow_time)
+
+
+def _is_ramadan_day(times: PrayerTimes) -> bool:
+    # If API includes Hijri month, rely on it directly.
+    if times.hijri_month is not None:
+        return times.hijri_month == 9
+    # If month is missing, keep showing panel for compatibility.
+    return True
 
 
 def get_ramadan_footer_lines(now: datetime) -> List[str]:
@@ -185,6 +210,8 @@ def get_ramadan_footer_lines(now: datetime) -> List[str]:
     today = _fetch_day_times(day)
     if today is None:
         return ["Ramazan: veri alinamadi"]
+    if not _is_ramadan_day(today):
+        return []
 
     if is_fixed_day:
         imsak_time = today.imsak
