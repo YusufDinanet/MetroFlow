@@ -1,4 +1,4 @@
-# AyrilikPano
+# Metro Flow
 
 ## 🚀 Proje Hakkında
 Ayrılık Çeşmesi gibi kritik aktarma noktalarında kullanılmak üzere geliştirilmiş gerçek zamanlı bir ulaşım panosudur.  
@@ -6,15 +6,15 @@ Python tabanlıdır ve M4 / Marmaray canlı kaynaklarını kullanır; canlı ver
 
 ## Özellikler
 - M4 ve Marmaray için yaklaşan sefer süreleri
-- 1024x600 kiosk odaklı desktop ekran (`metro_display.desktop`)
-- Terminal görünümü (`metro_display.terminal`)
-- PNG/E-Ink render modu (`metro_display.app`)
+- 1024x600 kiosk odaklı desktop ekran (`metro_flow.desktop`)
+- Terminal görünümü (`metro_flow.terminal`)
+- PNG/E-Ink render modu (`metro_flow.app`)
 - Ramazan alt barı (imsak / iftar + kalan süre)
 
 ## 🛠️ Özelleştirme (M3 veya Başka Duraklar İçin)
 
 ### 1) Durak Seçimi (`station_id` / `stop_id`)
-Ana ayarlar `metro_display/config.py` dosyasındadır.
+Ana ayarlar `metro_flow/config.py` dosyasındadır.
 
 - Genel durak adı: `STATION_NAME`
 - Hat bazlı sabit duraklar: `LINES[*].stop_ids`
@@ -39,7 +39,7 @@ LINES = [
 Yerel GTFS veritabanından `stop_id` bulma örneği:
 
 ```bash
-sqlite3 metro_display/data/gtfs.sqlite3 "SELECT stop_id, stop_name FROM stops WHERE lower(stop_name) LIKE '%kirazli%';"
+sqlite3 metro_flow/data/gtfs.sqlite3 "SELECT stop_id, stop_name FROM stops WHERE lower(stop_name) LIKE '%kirazli%';"
 ```
 
 ### 2) API Kaynağı
@@ -75,11 +75,11 @@ sudo apt install -y python3-full python3-venv python3-tk
 ### Sanal Ortam
 
 ```bash
-cd m4_marmaray_timeline
+cd <project_root>
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r metro_display/requirements.txt
+python -m pip install -r metro_flow/requirements.txt
 ```
 
 ### Çalıştırma
@@ -87,19 +87,19 @@ python -m pip install -r metro_display/requirements.txt
 Desktop (önerilen):
 
 ```bash
-python -m metro_display.desktop
+python -m metro_flow.desktop
 ```
 
 Terminal:
 
 ```bash
-python -m metro_display.terminal
+python -m metro_flow.terminal
 ```
 
 PNG/E-Ink:
 
 ```bash
-python -m metro_display.app
+python -m metro_flow.app
 ```
 
 ## Raspberry Pi Kiosk Modu
@@ -107,11 +107,11 @@ python -m metro_display.app
 ### Manuel kiosk açılış
 
 ```bash
-cd /home/yusuf/Desktop/m4_marmaray_timeline
+cd /home/<user>/Desktop/<project_root>
 source .venv/bin/activate
 export DISPLAY=:0
-export XAUTHORITY=/home/yusuf/.Xauthority
-PYTHONPATH="$PWD" python -m metro_display.desktop
+export XAUTHORITY=/home/<user>/.Xauthority
+PYTHONPATH="$PWD" python -m metro_flow.desktop
 ```
 
 Desktop modu kiosk davranışı içerir:
@@ -121,12 +121,12 @@ Desktop modu kiosk davranışı içerir:
 - `q`: uygulamayı kapatma
 
 ### Autostart (systemd)
-Repo içinde örnek service: `metro_display/systemd/metro-display.service`
+Repo içinde örnek service: `metro_flow/systemd/metro-flow.service`
 
 1. Servisi sisteme kopyala:
 
 ```bash
-sudo cp metro_display/systemd/metro-display.service /etc/systemd/system/metro-display.service
+sudo cp metro_flow/systemd/metro-flow.service /etc/systemd/system/metro-flow.service
 ```
 
 2. Servis dosyasında `User`, `WorkingDirectory`, `ExecStart` yollarını kendi ortama göre güncelle.
@@ -135,18 +135,18 @@ sudo cp metro_display/systemd/metro-display.service /etc/systemd/system/metro-di
 
 ```ini
 [Unit]
-Description=Metro Display Desktop
+Description=Metro Flow Desktop
 After=graphical.target network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=yusuf
-WorkingDirectory=/home/yusuf/Desktop/m4_marmaray_timeline
+WorkingDirectory=/home/<user>/Desktop/<project_root>
 Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/yusuf/.Xauthority
-Environment=PYTHONPATH=/home/yusuf/Desktop/m4_marmaray_timeline
-ExecStart=/home/yusuf/Desktop/m4_marmaray_timeline/.venv/bin/python -m metro_display.desktop
+Environment=XAUTHORITY=/home/<user>/.Xauthority
+Environment=PYTHONPATH=/home/<user>/Desktop/<project_root>
+ExecStart=/home/<user>/Desktop/<project_root>/.venv/bin/python -m metro_flow.desktop
 Restart=always
 RestartSec=5
 
@@ -158,18 +158,18 @@ WantedBy=graphical.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now metro-display.service
-sudo systemctl status metro-display.service
+sudo systemctl enable --now metro-flow.service
+sudo systemctl status metro-flow.service
 ```
 
 Log takibi:
 
 ```bash
-journalctl -u metro-display.service -f
+journalctl -u metro-flow.service -f
 ```
 
 ## Konfigürasyon Özeti
-Tüm ayarlar: `metro_display/config.py`
+Tüm ayarlar: `metro_flow/config.py`
 
 - Genel: `STATION_NAME`, `TIMEZONE`, `REFRESH_SECONDS`
 - Canlı/Fallback: `USE_LIVE_SOURCES`, `LIVE_FALLBACK_TO_GTFS`, `SHOW_STATUS_NOTE`
@@ -179,11 +179,11 @@ Tüm ayarlar: `metro_display/config.py`
 
 ## Sorun Giderme
 
-`No module named metro_display.desktop`:
+`No module named metro_flow.desktop`:
 
 ```bash
-cd /home/yusuf/Desktop/m4_marmaray_timeline
-PYTHONPATH="$PWD" .venv/bin/python -c "import metro_display.desktop; print('ok')"
+cd /home/<user>/Desktop/<project_root>
+PYTHONPATH="$PWD" .venv/bin/python -c "import metro_flow.desktop; print('ok')"
 ```
 
 `_tkinter` hatası:
@@ -193,10 +193,10 @@ sudo apt install -y python3-tk
 ```
 
 ## Proje Yapısı
-- `metro_display/app.py`: model üretimi ve ana döngü
-- `metro_display/live_sources.py`: canlı kaynak toplayıcı
-- `metro_display/ramadan.py`: imsak/iftar verisi
-- `metro_display/desktop.py`: 1024x600 dashboard/kiosk UI
-- `metro_display/terminal.py`: terminal UI
-- `metro_display/gtfs/`: GTFS indirme/import
-- `metro_display/render/`: PNG/E-Ink render
+- `metro_flow/app.py`: model üretimi ve ana döngü
+- `metro_flow/live_sources.py`: canlı kaynak toplayıcı
+- `metro_flow/ramadan.py`: imsak/iftar verisi
+- `metro_flow/desktop.py`: 1024x600 dashboard/kiosk UI
+- `metro_flow/terminal.py`: terminal UI
+- `metro_flow/gtfs/`: GTFS indirme/import
+- `metro_flow/render/`: PNG/E-Ink render

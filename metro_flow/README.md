@@ -1,19 +1,19 @@
-# metro_display
+# Metro Flow
 
 Canli metro panosu motoru (M4 + Marmaray + Ramazan paneli).
 
 ## Modlar
-- `python -m metro_display.desktop`
+- `python -m metro_flow.desktop`
   - 1024x600 profesyonel dashboard UI
   - Ana panellerde destination + dakika kolonlari
-- `python -m metro_display.terminal`
+- `python -m metro_flow.terminal`
   - terminal odakli gorunum
-- `python -m metro_display.app`
-  - PNG/E-Ink render (`metro_display/data/last.png`)
+- `python -m metro_flow.app`
+  - PNG/E-Ink render (`metro_flow/data/last.png`)
 
 ## Gereksinimler
 - Python `3.11+`
-- `pip install -r metro_display/requirements.txt`
+- `pip install -r metro_flow/requirements.txt`
 - GUI icin `tkinter`:
   - macOS: `brew install python-tk@3.11`
   - Linux: `sudo apt install python3-tk`
@@ -21,16 +21,16 @@ Canli metro panosu motoru (M4 + Marmaray + Ramazan paneli).
 ## Baslangic
 ```bash
 source .venv/bin/activate
-python -m metro_display.desktop
+python -m metro_flow.desktop
 ```
 
 Raspberry Pi:
 ```bash
-cd /home/yusuf/Desktop/m4_marmaray_timeline
+cd /home/<user>/Desktop/<project_root>
 source .venv/bin/activate
 export DISPLAY=:0
-export XAUTHORITY=/home/yusuf/.Xauthority
-PYTHONPATH="$(pwd)" .venv/bin/python -m metro_display.desktop
+export XAUTHORITY=/home/<user>/.Xauthority
+PYTHONPATH="$(pwd)" .venv/bin/python -m metro_flow.desktop
 ```
 
 ## Veri Akisi

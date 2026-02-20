@@ -1,16 +1,16 @@
 [Unit]
-Description=Metro Display Desktop
+Description=Metro Flow Desktop
 After=graphical.target network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/Desktop/m4_marmaray_timeline
+WorkingDirectory=/home/pi/Desktop/metro_flow
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/pi/.Xauthority
-Environment=PYTHONPATH=/home/pi/Desktop/m4_marmaray_timeline
-ExecStart=/home/pi/Desktop/m4_marmaray_timeline/.venv/bin/python -m metro_display.desktop
+Environment=PYTHONPATH=/home/pi/Desktop/metro_flow
+ExecStart=/home/pi/Desktop/metro_flow/.venv/bin/python -m metro_flow.desktop
 Restart=always
 RestartSec=5
 

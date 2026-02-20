@@ -12,7 +12,7 @@ except ModuleNotFoundError as exc:  # pragma: no cover
         "  brew install python-tk@3.11\n"
         "Sonra proje icinde .venv ile calistir:\n"
         "  source .venv/bin/activate\n"
-        "  python -m metro_display.desktop"
+        "  python -m metro_flow.desktop"
     ) from exc
 
 from . import app, config
@@ -254,7 +254,7 @@ def _parse_ramadan(footer_lines: List[str]) -> Dict[str, str]:
 class DesktopBoard:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("AyrilikPano")
+        self.root.title("Metro Flow")
         self.root.configure(bg=config.DESKTOP_BG_COLOR)
         self.root.geometry(f"{config.DESKTOP_WIDTH}x{config.DESKTOP_HEIGHT}")
         self.root.minsize(min(640, config.DESKTOP_WIDTH), min(360, config.DESKTOP_HEIGHT))
