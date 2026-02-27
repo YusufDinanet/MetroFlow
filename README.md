@@ -208,3 +208,7 @@ sudo apt install -y python3-tk
 - `metro_flow/terminal.py`: terminal UI
 - `metro_flow/gtfs/`: GTFS indirme/import
 - `metro_flow/render/`: PNG/E-Ink render
+
+## Lisans
+Bu proje `GNU General Public License v3.0 or later (GPL-3.0-or-later)` ile lisanslanmıştır.
+Detaylar için `LICENSE` dosyasına bakın.

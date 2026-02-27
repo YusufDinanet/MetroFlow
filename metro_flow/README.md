@@ -61,3 +61,7 @@ Ramazan paneli yenileme:
 - Bu paket `urllib` kullandigi icin `requests` gerekmez.
 - `tkinter` pip paketi degildir; sistemden kurulmalidir.
 - Desktop modda kiosk acilis vardir: fare gizlenir, `Esc` fullscreen cikis, `q` uygulama cikis.
+
+## Lisans
+Bu proje `GNU General Public License v3.0 or later (GPL-3.0-or-later)` ile lisanslanmistir.
+Detaylar icin `../LICENSE` dosyasina bakin.
